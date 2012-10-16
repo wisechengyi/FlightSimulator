@@ -1,0 +1,446 @@
+//  
+// Example code for OpenGL programming
+//
+#include <stdio.h>
+#include <stdlib.h>
+#include <GL/glut.h>
+#include "smfdata.h"
+#include "smfobj.h"
+#include <math.h>
+#include <iostream> 
+using namespace std;
+
+
+int nFPS = 50;
+float fRotateAngle = 0.f;
+//mesh file
+SmfObj I;
+SmfObj Off;
+SmfObj bunny;
+float t=0;
+float tvar;
+float red=0;
+float green=0;
+float blue=0;
+
+void init(void)
+{
+	//load files
+	I.ObjRead("I.smf"); //load mesh file of 'I'
+	Off.ObjRead("off.smf"); //load mesh of modified 'I'
+	bunny.ObjRead("bunny.smf"); //load bunny for fun
+	
+	
+	// init your data, setup OpenGL environment here
+	glClearColor(0.3,0.3,0.3,1.0); // clear color is gray		
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // uncomment this function if you only want to draw wireframe model
+}
+
+
+//function that draws I
+//no input or output
+//side effect: an 'I' will be drawn on the screen
+//other: SmfObj 'I' and 'Off' must be loaded at the init stage, keyframing is used.
+void drawI()
+{			
+		for (int i=0; i<2;i++)
+		{	
+			if (i==0)	//set up the parameters to draw the filled triangles in the first loop
+			{
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				red=fmod(t, 1);
+				green=fmod(2*t, 1);
+				blue=fmod(5*t, 1);
+				glColor3f(red,green,blue);				
+			}	
+			else		//draw the outline on the second loop
+			{	
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				glLineWidth(2);
+				glColor3f(0,0,0);
+				glBegin(GL_LINE_LOOP);	
+				
+					//adoption of keyframing
+					//I stores the data of the original I
+					//off stores the data of the 'I' with modified shape					
+					glVertex3f(	(1-t)*I.vertices[0]->co[0]+t*Off.vertices[0]->co[0],
+							(1-t)*I.vertices[0]->co[1]+t*Off.vertices[0]->co[1],
+							(1-t)*I.vertices[0]->co[2]+t*Off.vertices[0]->co[2]);
+
+					glVertex3f(	(1-t)*I.vertices[2]->co[0]+t*Off.vertices[2]->co[0],
+							(1-t)*I.vertices[2]->co[1]+t*Off.vertices[2]->co[1],
+							(1-t)*I.vertices[2]->co[2]+t*Off.vertices[2]->co[2]);
+
+					glVertex3f(	(1-t)*I.vertices[3]->co[0]+t*Off.vertices[3]->co[0],
+							(1-t)*I.vertices[3]->co[1]+t*Off.vertices[3]->co[1],
+							(1-t)*I.vertices[3]->co[2]+t*Off.vertices[3]->co[2]);
+
+					glVertex3f(	(1-t)*I.vertices[11]->co[0]+t*Off.vertices[11]->co[0],
+							(1-t)*I.vertices[11]->co[1]+t*Off.vertices[11]->co[1],
+							(1-t)*I.vertices[11]->co[2]+t*Off.vertices[11]->co[2]);
+
+					glVertex3f(	(1-t)*I.vertices[4]->co[0]+t*Off.vertices[4]->co[0],
+							(1-t)*I.vertices[4]->co[1]+t*Off.vertices[4]->co[1],
+							(1-t)*I.vertices[4]->co[2]+t*Off.vertices[4]->co[2]);
+
+					glVertex3f(	(1-t)*I.vertices[6]->co[0]+t*Off.vertices[6]->co[0],
+							(1-t)*I.vertices[6]->co[1]+t*Off.vertices[6]->co[1],
+							(1-t)*I.vertices[6]->co[2]+t*Off.vertices[6]->co[2]);
+
+					glVertex3f(	(1-t)*I.vertices[10]->co[0]+t*Off.vertices[10]->co[0],
+							(1-t)*I.vertices[10]->co[1]+t*Off.vertices[10]->co[1],
+							(1-t)*I.vertices[10]->co[2]+t*Off.vertices[10]->co[2]);
+
+					glVertex3f(	(1-t)*I.vertices[7]->co[0]+t*Off.vertices[7]->co[0],
+							(1-t)*I.vertices[7]->co[1]+t*Off.vertices[7]->co[1],
+							(1-t)*I.vertices[7]->co[2]+t*Off.vertices[7]->co[2]);
+
+					glVertex3f(	(1-t)*I.vertices[8]->co[0]+t*Off.vertices[8]->co[0],
+							(1-t)*I.vertices[8]->co[1]+t*Off.vertices[8]->co[1],
+							(1-t)*I.vertices[8]->co[2]+t*Off.vertices[8]->co[2]);
+
+					glVertex3f(	(1-t)*I.vertices[9]->co[0]+t*Off.vertices[9]->co[0],
+							(1-t)*I.vertices[9]->co[1]+t*Off.vertices[9]->co[1],
+							(1-t)*I.vertices[9]->co[2]+t*Off.vertices[9]->co[2]);
+
+					glVertex3f(	(1-t)*I.vertices[5]->co[0]+t*Off.vertices[5]->co[0],
+							(1-t)*I.vertices[5]->co[1]+t*Off.vertices[5]->co[1],
+							(1-t)*I.vertices[5]->co[2]+t*Off.vertices[5]->co[2]);		
+							
+					
+				glEnd();
+				glLineWidth(1);	//this is to set up the linewidth before drawing the wireframe for the inner triangles		
+			}
+			
+
+			//triangle fan is adopted	
+			glBegin(GL_TRIANGLE_FAN);
+			for (unsigned i=0; i < 6; i++)
+			{	
+
+				glVertex3f(	(1-t)*I.vertices[i]->co[0]+t*Off.vertices[i]->co[0],
+						(1-t)*I.vertices[i]->co[1]+t*Off.vertices[i]->co[1],
+						(1-t)*I.vertices[i]->co[2]+t*Off.vertices[i]->co[2]);
+			
+			}
+			glEnd();
+		
+			int k=-1;		
+			glBegin(GL_TRIANGLE_FAN);
+			
+				
+				k=5;
+				glVertex3f(	(1-t)*I.vertices[k]->co[0]+t*Off.vertices[k]->co[0],
+						(1-t)*I.vertices[k]->co[1]+t*Off.vertices[k]->co[1],
+						(1-t)*I.vertices[k]->co[2]+t*Off.vertices[k]->co[2]);
+				k=4;
+				glVertex3f(	(1-t)*I.vertices[k]->co[0]+t*Off.vertices[k]->co[0],
+						(1-t)*I.vertices[k]->co[1]+t*Off.vertices[k]->co[1],
+						(1-t)*I.vertices[k]->co[2]+t*Off.vertices[k]->co[2]);
+				k=6;
+				glVertex3f(	(1-t)*I.vertices[k]->co[0]+t*Off.vertices[k]->co[0],
+						(1-t)*I.vertices[k]->co[1]+t*Off.vertices[k]->co[1],
+						(1-t)*I.vertices[k]->co[2]+t*Off.vertices[k]->co[2]);
+				k=7;
+				glVertex3f(	(1-t)*I.vertices[k]->co[0]+t*Off.vertices[k]->co[0],
+						(1-t)*I.vertices[k]->co[1]+t*Off.vertices[k]->co[1],
+						(1-t)*I.vertices[k]->co[2]+t*Off.vertices[k]->co[2]);
+				k=8;
+				glVertex3f(	(1-t)*I.vertices[k]->co[0]+t*Off.vertices[k]->co[0],
+						(1-t)*I.vertices[k]->co[1]+t*Off.vertices[k]->co[1],
+						(1-t)*I.vertices[k]->co[2]+t*Off.vertices[k]->co[2]);					
+	
+			glEnd();
+
+
+			//********last 3 triangles that were not covered by the triangle fans.
+			glBegin(GL_TRIANGLES);
+				//top right
+				k=3;
+				glVertex3f(	(1-t)*I.vertices[k]->co[0]+t*Off.vertices[k]->co[0],
+						(1-t)*I.vertices[k]->co[1]+t*Off.vertices[k]->co[1],
+						(1-t)*I.vertices[k]->co[2]+t*Off.vertices[k]->co[2]);
+				k=4;
+				glVertex3f(	(1-t)*I.vertices[k]->co[0]+t*Off.vertices[k]->co[0],
+						(1-t)*I.vertices[k]->co[1]+t*Off.vertices[k]->co[1],
+						(1-t)*I.vertices[k]->co[2]+t*Off.vertices[k]->co[2]);
+				k=11;
+				glVertex3f(	(1-t)*I.vertices[k]->co[0]+t*Off.vertices[k]->co[0],
+						(1-t)*I.vertices[k]->co[1]+t*Off.vertices[k]->co[1],
+						(1-t)*I.vertices[k]->co[2]+t*Off.vertices[k]->co[2]);
+				//bottom right
+				k=6;
+				glVertex3f(	(1-t)*I.vertices[k]->co[0]+t*Off.vertices[k]->co[0],
+						(1-t)*I.vertices[k]->co[1]+t*Off.vertices[k]->co[1],
+						(1-t)*I.vertices[k]->co[2]+t*Off.vertices[k]->co[2]);
+				k=7;
+				glVertex3f(	(1-t)*I.vertices[k]->co[0]+t*Off.vertices[k]->co[0],
+						(1-t)*I.vertices[k]->co[1]+t*Off.vertices[k]->co[1],
+						(1-t)*I.vertices[k]->co[2]+t*Off.vertices[k]->co[2]);
+				k=10;
+				glVertex3f(	(1-t)*I.vertices[k]->co[0]+t*Off.vertices[k]->co[0],
+						(1-t)*I.vertices[k]->co[1]+t*Off.vertices[k]->co[1],
+						(1-t)*I.vertices[k]->co[2]+t*Off.vertices[k]->co[2]);
+			
+				//bottom left
+				k=5;
+				glVertex3f(	(1-t)*I.vertices[k]->co[0]+t*Off.vertices[k]->co[0],
+						(1-t)*I.vertices[k]->co[1]+t*Off.vertices[k]->co[1],
+						(1-t)*I.vertices[k]->co[2]+t*Off.vertices[k]->co[2]);
+				k=8;
+				glVertex3f(	(1-t)*I.vertices[k]->co[0]+t*Off.vertices[k]->co[0],
+						(1-t)*I.vertices[k]->co[1]+t*Off.vertices[k]->co[1],
+						(1-t)*I.vertices[k]->co[2]+t*Off.vertices[k]->co[2]);
+				k=9;
+				glVertex3f(	(1-t)*I.vertices[k]->co[0]+t*Off.vertices[k]->co[0],
+						(1-t)*I.vertices[k]->co[1]+t*Off.vertices[k]->co[1],
+						(1-t)*I.vertices[k]->co[2]+t*Off.vertices[k]->co[2]);	
+			glEnd();
+		}
+
+
+
+
+
+
+
+
+		
+		
+//***************************************	
+//*************keyframing TEST**************************
+//****************************************************
+//		glBegin(GL_TRIANGLES);
+//			glColor3f(1,0,0);
+////			glVertex3f(a.co[0]*t,a.co[1]*t,a.co[2]*t);
+////			glVertex3f(b.co[0]*t,b.co[1]*t,b.co[2]*t);
+////			glVertex3f(c.co[0]*t,c.co[1]*t,c.co[2]*t);	
+//			
+//			glVertex3f(a.co[0],a.co[1],a.co[2]);
+//			glVertex3f(b.co[0],b.co[1],b.co[2]);
+//			glVertex3f(c.co[0],c.co[1],c.co[2]);	
+//			
+//			
+//			
+//			glColor3f(0,0,1);
+////			t=1;			
+//			
+//			glVertex3f((1-t)*a.co[0]+(t)*e.co[0],(1-t)*a.co[1]+(t)*e.co[1],(1-t)*a.co[2]+(t)*e.co[2]);
+//			glVertex3f((1-t)*b.co[0]+(t)*f.co[0],(1-t)*b.co[1]+(t)*f.co[1],(1-t)*b.co[2]+(t)*f.co[2]);
+//			glVertex3f((1-t)*c.co[0]+(t)*g.co[0],(1-t)*c.co[1]+(t)*g.co[1],(1-t)*c.co[2]+(t)*g.co[2]);
+//			
+//			
+//			glColor3f(0,1,0);
+//			glVertex3f(e.co[0],e.co[1],e.co[2]);
+//			glVertex3f(f.co[0],f.co[1],f.co[2]);
+//			glVertex3f(g.co[0],g.co[1],g.co[2]);
+//			
+//			
+////			glVertex3f(e.co[0]+t,e.co[1]+t,e.co[2]+t);
+////			glVertex3f(f.co[0]+t,f.co[1]+t,f.co[2]+t);
+////			glVertex3f(g.co[0]+t,g.co[1]+t,g.co[2]+t);
+//			
+////			cout<<"t: "<<t<<endl;
+//						
+//		glEnd();
+
+
+
+}
+//input/output: none
+//side effect: a bunny will be shown on the screen
+//other: bunny must be loaded at the init stage
+void drawBunny()
+{
+
+//***************************************	
+//*************Draw bunny**************************
+//***************************************************
+
+		
+		
+		glColor3f(1,1,1);
+		
+		
+			
+		glRotatef( fRotateAngle ,0.f,1.f,0.f);
+		glTranslatef(-5,pow(sin(t*2*3.14-3.14),2),-2);
+		
+		glRotatef(45 ,0.f,1.f,0.f);	//around y
+		
+//		glRotatef( -90 ,1.f,0.f,0.f);	
+		glScalef(10,10,10);
+		
+		
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glBegin(GL_TRIANGLES);
+//		cout<<"size: "<<bunny.faces.size()<<endl;
+			for (unsigned i=0; i<bunny.faces.size();i++)
+			{
+				
+//				cout<<bunny.faces[i]->at(0)<<endl;
+//				cout<<bunny.vertices[bunny.faces[i]->at(0)]->co[0]
+//				<<bunny.vertices[bunny.faces[i]->at(0)]->co[1]
+//				<<bunny.vertices[bunny.faces[i]->at(0)]->co[2]<<endl;	
+				
+							
+				glVertex3f(bunny.vertices[bunny.faces[i]->at(0)]->co[0],
+					bunny.vertices[bunny.faces[i]->at(0)]->co[1],
+					bunny.vertices[bunny.faces[i]->at(0)]->co[2]);	
+				glVertex3f(bunny.vertices[bunny.faces[i]->at(1)]->co[0],
+					bunny.vertices[bunny.faces[i]->at(1)]->co[1],
+					bunny.vertices[bunny.faces[i]->at(1)]->co[2]);	
+				glVertex3f(bunny.vertices[bunny.faces[i]->at(2)]->co[0],
+					bunny.vertices[bunny.faces[i]->at(2)]->co[1],
+					bunny.vertices[bunny.faces[i]->at(2)]->co[2]);	
+			}
+		glEnd();
+//***************************************	
+//*************Draw bunny end**************************
+//***************************************************
+
+}
+
+void display(void)
+{
+	// put your OpenGL display commands here
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+	// reset OpenGL transformation matrix
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity(); // reset transformation matrix to identity
+
+	// setup look at transformation so that 
+	// eye is at : (0,0,10)
+	// look at center is at : (0,0,0)
+	// up direction is +y axis
+	gluLookAt(0.f,0.f,10.f,
+		0.f,0.f,0.f,
+		0.f,1.f,0.f);
+	
+	//set up the gradient background
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glBegin(GL_QUADS);
+		//green color
+		glColor3f(0.0,1.0,0.0);
+		glVertex2f(-10.0,-10.0);
+		glVertex2f(10.0,-10.0);
+		//blue color
+		glColor3f(0.0,0.0,1.0);
+		glVertex2f(10.0, 10.0);
+		glVertex2f(-10.0, 10.0);
+	glEnd();
+	
+	
+	glPushMatrix();	
+	//	drawBunny(); //draw the bunny, without lighting yet.. :(
+	glPopMatrix();
+	
+	
+		
+	glPushMatrix();		
+//		setting up parameters before drawing I
+		glRotatef(fRotateAngle,0,1,0); //rotate about y
+		glTranslatef(-2*t,3*t-2,t);//translate aside
+		glRotatef(fRotateAngle,0,1,0);	//rotate about y
+		glRotatef(fRotateAngle*2,1.f,0.f,0.f); //rotate about x z
+		glTranslatef(-2,-2,0);	//move to origin ish
+		drawI();	//call the function to draw I	
+	glPopMatrix();
+	
+
+	
+	
+	
+//	glutSolidTeapot(1.f); // call glut utility to draw a solid teapot 
+	
+//	glFlush();	//for single buffer
+	glutSwapBuffers();	// swap front/back framebuffer to avoid flickering 
+}
+
+void reshape (int w, int h)
+{
+	// reset viewport ( drawing screen ) size
+	glViewport(0, 0, w, h);
+	float fAspect = ((float)w)/h; 
+	// reset OpenGL projection matrix
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(70.f,fAspect,0.001f,30.f); 
+}
+
+
+
+void keyboard(unsigned char key, int x, int y)
+{
+	// put your keyboard control here
+	if (key == 27) 
+	{
+		// ESC hit, so quit
+		printf("demonstration finished.\n");
+		exit(0);
+	}
+}
+
+void mouse(int button, int state, int x, int y)
+{
+	// process your mouse control here
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+		printf("push left mouse button.\n");
+	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
+		{
+			exit(0);
+		}
+}
+
+
+void timer(int v)
+{
+	fRotateAngle += 1.f; // change rotation angles
+	glutPostRedisplay(); // trigger display function by sending redraw into message queue
+	glutTimerFunc(1000/nFPS,timer,v); // restart timer again
+	tvar+=.03;
+	if (tvar>2)
+	{
+		tvar=0;
+	}
+//	t= abs(1-tvar);
+//	t=0;
+
+	if (tvar<1)
+	{
+		t=tvar;
+	}
+	else
+	{
+		t=2-tvar;
+	}
+//	cout<<t << " " << tvar<<endl;
+}
+
+int main(int argc, char* argv[])
+{
+	glutInit(&argc, (char**)argv);
+	// set up for double-buffering & RGB color buffer & depth test
+	glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH); 
+	
+	//********************single buffer for testing
+//	glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH); 	
+	//****************************************
+	
+	glutInitWindowSize (800, 600); 
+	glutInitWindowPosition (100, 100);
+	glutCreateWindow ((const char*)"Hello Triangle");
+
+	init(); // setting up user data & OpenGL environment
+
+	// set up the call-back functions 
+	glutDisplayFunc(display);  // called when drawing 
+	glutReshapeFunc(reshape);  // called when change window size
+	glutKeyboardFunc(keyboard); // called when received keyboard interaction
+	glutMouseFunc(mouse);	    // called when received mouse interaction
+	glutTimerFunc(100,timer,nFPS); // a periodic timer. Usually used for updating animation
+	glutMainLoop(); // start the main message-callback loop
+	return 0;
+}
+
